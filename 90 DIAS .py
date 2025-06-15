@@ -5,26 +5,42 @@ import random
 from datetime import date
 
 # ----------- 1. CONFIGURACIÓN GLOBAL -----------
-
-PASSWORD = "retoempoderada2025"
+PASSWORD = "reto2025"
 USERS_DIR = "participantes"
 
 if not os.path.exists(USERS_DIR):
     os.makedirs(USERS_DIR)
 
-# ----------- 2. ACCESO Y PROGRESO PERSONALIZADO -----------
+# ----------- 2. ESTILO VISUAL -----------
+st.markdown("""
+    <style>
+    body {
+        background-color: #EBDCFB;
+    }
+    [data-testid="stAppViewContainer"] > .main {
+        background-color: #EBDCFB;
+    }
+    [data-testid="stHeader"] {
+        background-color: transparent;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
+# ----------- 3. LOGIN -----------
 def login():
     st.title("🌸 Bienvenida al Reto de 90 Días")
-    nombre = st.text_input("Ingresa tu nombre").strip().lower()
-    password = st.text_input("Contraseña", type="password")
+    nombre = st.text_input("Ingresa tu nombre", key="nombre_login").strip().lower()
+    password = st.text_input("Contraseña", type="password", key="clave_login")
 
     if nombre and password == PASSWORD:
+        st.session_state["logueada"] = True
+        st.session_state["nombre"] = nombre
         st.success(f"¡Hola {nombre.title()}! Acceso concedido.")
-        return nombre
+        st.rerun()()
     elif password and password != PASSWORD:
         st.error("Contraseña incorrecta")
-    return None
+
+# ----------- 4. PROGRESO Y RESPUESTAS -----------
 
 def obtener_progreso(nombre):
     archivo = os.path.join(USERS_DIR, f"{nombre}_progreso.csv")
@@ -40,8 +56,6 @@ def actualizar_progreso(nombre, dia_actual):
     df = pd.read_csv(archivo)
     df.loc[dia_actual, "completado"] = True
     df.to_csv(archivo, index=False)
-
-# ----------- 3. GUARDADO DE RESPUESTAS Y PDF -----------
 
 def guardar_respuesta(nombre, dia_actual, texto, patron_emocional=None):
     archivo = os.path.join(USERS_DIR, f"{nombre}_respuestas.csv")
@@ -65,7 +79,7 @@ def guardar_pdf(nombre, dia_actual, archivo_pdf):
     with open(os.path.join(carpeta, archivo_pdf.name), "wb") as f:
         f.write(archivo_pdf.read())
 
-# ----------- 4. RETOS DIARIOS -----------
+# ----------- 5. RETOS DIARIOS -----------
 
 def reto_dia_1(nombre):
     st.markdown("## 📅 Día 1 – Auto-descubrimiento")
@@ -140,7 +154,7 @@ def reto_dia_3(nombre):
         else:
             st.warning("Por favor, escribe algo o sube un archivo.")
 
-# ----------- 5. MOSTRAR RETO -----------
+# ----------- 6. MOSTRAR RETO -----------
 
 def mostrar_reto_por_dia(dia, nombre):
     if dia == 0:
@@ -154,18 +168,35 @@ def mostrar_reto_por_dia(dia, nombre):
         st.success("¡Has completado todos los retos disponibles! 🎉")
         st.write("Gracias por recorrer este camino de amor propio 💜")
 
-# ----------- 6. INICIO -----------
+# ----------- 7. MAIN APP -----------
 
 def main():
-    nombre = login()
-    if nombre:
-        df_progreso = obtener_progreso(nombre)
+    if "logueada" not in st.session_state:
+        login()
+    else:
+        nombre = st.session_state.get("nombre", "amiga").title()
+
+        st.markdown(f"### 🌷 Hola {nombre}, este es tu espacio seguro")
+
+        st.markdown("""
+        Bienvenida a este espacio solo para ti 💜  
+        Durante 90 días, harás un viaje de reconexión contigo misma.  
+        Cada día encontrarás una frase poderosa, un reto consciente y un momento de reflexión.  
+
+        No tienes que ser perfecta, solo **valiente para mirarte con amor**.  
+        Confía en ti, estás reconstruyéndote paso a paso 🌱
+        """)
+
+        # 👇 Separador visual entre la bienvenida y el reto
+        st.markdown("---")
+
+        df_progreso = obtener_progreso(st.session_state["nombre"])
         dia_actual = df_progreso[df_progreso["completado"] == False].index.min()
         if pd.isna(dia_actual):
             st.balloons()
             st.success("¡Has completado todos los retos! 🎉")
         else:
-            mostrar_reto_por_dia(dia_actual, nombre)
+            mostrar_reto_por_dia(dia_actual, st.session_state["nombre"])
 
 if __name__ == "__main__":
     main()
