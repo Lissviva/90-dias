@@ -12,16 +12,14 @@ if not os.path.exists(USERS_DIR):
     os.makedirs(USERS_DIR)
 
 # ----------- 2. ESTILO VISUAL -----------
+# 🌸 Fondo púrpura pastel completo
 st.markdown("""
     <style>
-    body {
-        background-color: #EBDCFB;
-    }
-    [data-testid="stAppViewContainer"] > .main {
-        background-color: #EBDCFB;
+    html, body, [data-testid="stAppViewContainer"], .main {
+        background-color: #EBDCFB !important;
     }
     [data-testid="stHeader"] {
-        background-color: transparent;
+        background-color: transparent !important;
     }
     </style>
 """, unsafe_allow_html=True)
